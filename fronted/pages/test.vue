@@ -50,12 +50,8 @@
       </v-toolbar>
     </template>
     <template v-slot:item.actions="{ item }">
-      <v-icon small class="mr-2" @click="editItem(item)">
-        mdi-pencil
-      </v-icon>
-      <v-icon small @click="deleteItem(item)">
-        mdi-delete
-      </v-icon>
+      <v-icon small class="mr-2" @click="editItem(item)"> mdi-pencil </v-icon>
+      <v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>
     </template>
     <template v-slot:no-data>
       <v-btn color="primary" @click="initialize">Reset</v-btn>
@@ -73,34 +69,34 @@ export default {
         text: "ID",
         align: "start",
         sortable: false,
-        value: "id"
+        value: "id",
       },
       { text: "NAME", value: "name" },
       { text: "TODO", value: "todo" },
-      { text: "Actions", value: "actions", sortable: false }
+      { text: "Actions", value: "actions", sortable: false },
     ],
     todoList: [],
     editedIndex: -1,
     editedItem: {
       name: "",
-      todo: ""
+      todo: "",
     },
     defaultItem: {
       name: "",
-      todo: ""
-    }
+      todo: "",
+    },
   }),
 
   computed: {
     formTitle() {
       return this.editedIndex === -1 ? "New Item" : "Edit Item";
-    }
+    },
   },
 
   watch: {
     dialog(val) {
       val || this.close();
-    }
+    },
   },
 
   created() {
@@ -111,20 +107,44 @@ export default {
     initialize() {
       axios
         .get("http://localhost:8000/todoList")
-        .then(response => (this.todoList = response.data))
-        .catch(error => console.log(error));
+        .then((response) => (this.todoList = response.data))
+        .catch((error) => console.log(error));
     },
 
     editItem(item) {
+      //ペンボタンを押した瞬間のフォームデータが送信されている（この書き方だと
+      //item に入ってるのは更新前の情報
       this.editedIndex = this.todoList.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialog = true;
+      console.log("item", item);
+      console.log("item.id", item.id);
+      console.log("item.name", item.name);
+      console.log("item.todo", item.todo);
+
+      console.log("editItem", this.editedItem);
+      axios
+        .put("http://localhost:8000/todoList", {
+          id: item.id,
+          name: item.name,
+          todo: item.todo,
+        })
+        .catch((error) => console.log(error));
     },
 
     deleteItem(item) {
       const index = this.todoList.indexOf(item);
+      //console.log("index", index);
+      //console.log("item id", item.id);
       confirm("Are you sure you want to delete this item?") &&
         this.todoList.splice(index, 1);
+      //delete の処理は通るが、ポップアップで拒否しても以下が実行される
+      //条件分岐かな
+      const params = { id: item.id };
+      const qs = new URLSearchParams(params);
+      axios
+        .delete(`http://localhost:8000/todoList?${qs}`)
+        .catch((error) => console.log(error));
     },
 
     close() {
@@ -142,7 +162,7 @@ export default {
         this.todoList.push(this.editedItem);
       }
       this.close();
-    }
-  }
+    },
+  },
 };
 </script>

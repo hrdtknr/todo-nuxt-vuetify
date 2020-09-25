@@ -82,6 +82,11 @@ export default {
         },
         {
           icon: "mdi-chart-bubble",
+          title: "Todo",
+          to: "/todo",
+        },
+        {
+          icon: "mdi-chart-bubble",
           title: "Test",
           to: "/test",
         },

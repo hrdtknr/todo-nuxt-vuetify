@@ -26,13 +26,13 @@
                 <v-row>
                   <v-col cols="12" sm="6" md="4">
                     <v-text-field
-                      v-model="editedItem.name"
+                      v-model="editedTodo.name"
                       label="NAME"
                     ></v-text-field>
                   </v-col>
                   <v-col cols="12" sm="6" md="4">
                     <v-text-field
-                      v-model="editedItem.todo"
+                      v-model="editedTodo.todo"
                       label="TODO"
                     ></v-text-field>
                   </v-col>
@@ -50,8 +50,8 @@
       </v-toolbar>
     </template>
     <template v-slot:item.actions="{ item }">
-      <v-icon small class="mr-2" @click="editItem(item)"> mdi-pencil </v-icon>
-      <v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>
+      <v-icon small class="mr-2" @click="editTodo(item)"> mdi-pencil </v-icon>
+      <v-icon small @click="deleteTodo(item)"> mdi-delete </v-icon>
     </template>
     <template v-slot:no-data>
       <v-btn color="primary" @click="initialize">Reset</v-btn>
@@ -77,11 +77,11 @@ export default {
     ],
     todoList: [],
     editedIndex: -1,
-    editedItem: {
+    editedTodo: {
       name: "",
       todo: "",
     },
-    defaultItem: {
+    defaultTodo: {
       name: "",
       todo: "",
     },
@@ -111,28 +111,14 @@ export default {
         .catch((error) => console.log(error));
     },
 
-    editItem(item) {
-      //ペンボタンを押した瞬間のフォームデータが送信されている（この書き方だと
-      //item に入ってるのは更新前の情報
+    editTodo(item) {
       this.editedIndex = this.todoList.indexOf(item);
-      this.editedItem = Object.assign({}, item);
+      this.editedTodo = Object.assign({}, item);
       this.dialog = true;
-      //console.log("item", item);
-      //console.log("item.id", item.id);
-      //console.log("item.name", item.name);
-      //console.log("item.todo", item.todo);
-
-      //console.log("editItem", this.editedItem);
-
-      //昨日のはthisがないから宣言されてないって怒られたのでは
-      //this.updateTodo(this.editedItem);
     },
 
-    deleteItem(item) {
+    deleteTodo(item) {
       const index = this.todoList.indexOf(item);
-      //console.log("index", index);
-      //console.log("item id", item.id);
-
       if (confirm("Are you sure you want to delete this item?")) {
         this.todoList.splice(index, 1);
         const params = { id: item.id };
@@ -146,44 +132,33 @@ export default {
     close() {
       this.dialog = false;
       this.$nextTick(() => {
-        this.editedItem = Object.assign({}, this.defaultItem);
+        this.editedTodo = Object.assign({}, this.defaultTodo);
         this.editedIndex = -1;
       });
     },
 
     save() {
-      //saveボタンを押した後にupdateとinsert処理だね
-      //console.log("save this.editedItem", this.editedItem);
-      //console.log("save this.editedItem.name", this.editedItem.name);
-      //console.log("save this.editedItem.todo", this.editedItem.todo);
-      //console.log("save this.editedIndex", this.editedIndex);
       if (this.editedIndex > -1) {
-        console.log("if update"); //update の処理
-        Object.assign(this.todoList[this.editedIndex], this.editedItem);
+        //update
+        Object.assign(this.todoList[this.editedIndex], this.editedTodo);
         axios
           .put("http://localhost:8000/todoList", {
-            id: this.editedItem.id,
-            name: this.editedItem.name,
-            todo: this.editedItem.todo,
+            id: this.editedTodo.id,
+            name: this.editedTodo.name,
+            todo: this.editedTodo.todo,
           })
           .catch((error) => console.log(error));
       } else {
-        console.log("else insert"); //insert の処理
-        //this.todoList.push(this.editedItem);
+        //insert
         axios
           .post("http://localhost:8000/todoList", {
-            name: this.editedItem.name,
-            todo: this.editedItem.name,
+            name: this.editedTodo.name,
+            todo: this.editedTodo.todo,
           })
-          .then(() => this.initialize()) //id表示するのに必要
+          .then(() => this.initialize())
           .catch((error) => console.log(error));
       }
-      this.close();
-      this.test();
-    },
-
-    test() {
-      console.log("test");
+      this.close(); //item -> todo before change
     },
   },
 };

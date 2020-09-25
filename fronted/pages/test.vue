@@ -117,34 +117,30 @@ export default {
       this.editedIndex = this.todoList.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialog = true;
-      console.log("item", item);
-      console.log("item.id", item.id);
-      console.log("item.name", item.name);
-      console.log("item.todo", item.todo);
+      //console.log("item", item);
+      //console.log("item.id", item.id);
+      //console.log("item.name", item.name);
+      //console.log("item.todo", item.todo);
 
-      console.log("editItem", this.editedItem);
-      axios
-        .put("http://localhost:8000/todoList", {
-          id: item.id,
-          name: item.name,
-          todo: item.todo,
-        })
-        .catch((error) => console.log(error));
+      //console.log("editItem", this.editedItem);
+
+      //昨日のはthisがないから宣言されてないって怒られたのでは
+      //this.updateTodo(this.editedItem);
     },
 
     deleteItem(item) {
       const index = this.todoList.indexOf(item);
       //console.log("index", index);
       //console.log("item id", item.id);
-      confirm("Are you sure you want to delete this item?") &&
+
+      if (confirm("Are you sure you want to delete this item?")) {
         this.todoList.splice(index, 1);
-      //delete の処理は通るが、ポップアップで拒否しても以下が実行される
-      //条件分岐かな
-      const params = { id: item.id };
-      const qs = new URLSearchParams(params);
-      axios
-        .delete(`http://localhost:8000/todoList?${qs}`)
-        .catch((error) => console.log(error));
+        const params = { id: item.id };
+        const qs = new URLSearchParams(params);
+        axios
+          .delete(`http://localhost:8000/todoList?${qs}`)
+          .catch((error) => console.log(error));
+      }
     },
 
     close() {
@@ -156,12 +152,38 @@ export default {
     },
 
     save() {
+      //saveボタンを押した後にupdateとinsert処理だね
+      //console.log("save this.editedItem", this.editedItem);
+      //console.log("save this.editedItem.name", this.editedItem.name);
+      //console.log("save this.editedItem.todo", this.editedItem.todo);
+      //console.log("save this.editedIndex", this.editedIndex);
       if (this.editedIndex > -1) {
+        console.log("if update"); //update の処理
         Object.assign(this.todoList[this.editedIndex], this.editedItem);
+        axios
+          .put("http://localhost:8000/todoList", {
+            id: this.editedItem.id,
+            name: this.editedItem.name,
+            todo: this.editedItem.todo,
+          })
+          .catch((error) => console.log(error));
       } else {
-        this.todoList.push(this.editedItem);
+        console.log("else insert"); //insert の処理
+        //this.todoList.push(this.editedItem);
+        axios
+          .post("http://localhost:8000/todoList", {
+            name: this.editedItem.name,
+            todo: this.editedItem.name,
+          })
+          .then(() => this.initialize()) //id表示するのに必要
+          .catch((error) => console.log(error));
       }
       this.close();
+      this.test();
+    },
+
+    test() {
+      console.log("test");
     },
   },
 };
